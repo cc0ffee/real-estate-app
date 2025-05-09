@@ -76,3 +76,55 @@ router.delete('/:user_id', async (req, res) => {
 });
 
 export default router;
+
+router.post('/:user_id/addresses', async (req, res) => {
+    const { user_id } = req.params;
+    const { address } = req.body;
+
+    try {
+        const result = await pool.query('INSERT INTO addresses (user_id, address) values ($1, $2)', [user_id, address]);
+        res.status(200).json({ message: 'Address added!', address_id: result.rows[0].address_id });
+    } catch (err) {
+        console.error('Error occured for address: ', err);
+        res.status(500).json({ error: 'Cannot add address'});
+    }
+});
+
+router.get('/:user_id/addresses/', async (req, res) => {
+    const { user_id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM Addresses where user_id = $1', [user_id]);
+        res.status(200).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error occured for address: ', err);
+        res.status(500).json({ error: 'Cannot fetch addresses'});
+    }
+});
+
+router.put('/:user_id/addresses/:address_id', async (req, res) => {
+    const { address_id } = req.params;
+    const { address } = req.body;
+
+    try {
+        const result = await pool.query('UPDATE Addresses SET address = $1 WHERE address_id = $2', [address, address_id]);
+        res.status(200).json({ message: 'Address added!', address_id: result.rows[0].address_id });
+    } catch (err) {
+        console.error('Error occured for address: ', err);
+        res.status(500).json({ error: 'Cannot add address'});
+    }
+});
+
+router.delete('/:user_id/addresses/:address_id', async (req, res) => {
+    const { address_id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM CreditCards WHERE address = (SELECT address FROM Addresses WHERE address_id = $1)', [address_id]);
+        if (result.rows.length !== 0) {
+            return res.status(400).json({error: "Cannot delete address that is linked to a card!"})
+        }
+        await pool.query('DELETE FROM Addresses WHERE address_id = $1', [address_id]);
+        res.status(200).json({ message: 'Address deleted!'});
+    } catch (err) {
+        console.error('Error occured for address: ', err);
+        res.status(500).json({ error: 'Cannot delete address'});
+    }
+});
