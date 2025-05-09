@@ -3,11 +3,14 @@ import session from 'express-session';
 import cors from 'cors';
 import bParser from 'body-parser';
 import { Pool } from 'pg';
+import userRoutes from './routes/userRoutes';
+import propertyRoutes from './routes/propertyRoutes';
+import bookingRoutes from './routes/bookingRoutes';
 
 const app = express();
 const port = 3001;
 
-const pool = new Pool({
+export const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'realestate',
