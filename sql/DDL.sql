@@ -82,7 +82,7 @@ CREATE TABLE Booking (
     user_id INTEGER NOT NULL,
     credit_id INTEGER NOT NULL,
     start DATE,
-    end DATE,
+    "end" DATE,
     status VARCHAR(50),
     FOREIGN KEY (prop_id) REFERENCES Property(prop_id),
     FOREIGN KEY (user_id) REFERENCES ProspectiveRenters(user_id),
