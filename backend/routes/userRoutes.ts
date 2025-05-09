@@ -75,8 +75,6 @@ router.delete('/:user_id', async (req, res) => {
     }
 });
 
-export default router;
-
 router.post('/:user_id/addresses', async (req, res) => {
     const { user_id } = req.params;
     const { address } = req.body;
@@ -90,7 +88,7 @@ router.post('/:user_id/addresses', async (req, res) => {
     }
 });
 
-router.get('/:user_id/addresses/', async (req, res) => {
+router.get('/:user_id/addresses', async (req, res) => {
     const { user_id } = req.params;
     try {
         const result = await pool.query('SELECT * FROM Addresses where user_id = $1', [user_id]);
@@ -128,3 +126,53 @@ router.delete('/:user_id/addresses/:address_id', async (req, res) => {
         res.status(500).json({ error: 'Cannot delete address'});
     }
 });
+
+router.post('/:user_id/credit_cards', async (req, res) => {
+    const { user_id } = req.params;
+    const { card_number, exp_date, name, address } = req.body;
+
+    try {
+        const result = await pool.query('INSERT INTO CreditCards (user_id, card_number, exp_date, name, address) VALUES ($1, $2, $3, $4, $5)', [user_id, card_number, exp_date, name, address]);
+        res.status(201).json({ message: "Credit card added!", credit_id: result.rows[0].credit_id });
+    } catch (err) {
+        console.error('Error occured for credit card: ', err);
+        res.status(500).json({ error: 'Cannot add credit card'});
+    }
+});
+
+router.get('/:user_id/credit_cards', async (req, res) => {
+    const { user_id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM CreditCards where user_id = $1', [user_id]);
+        res.status(200).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error occured for credit cards: ', err);
+        res.status(500).json({ error: 'Cannot fetch credit cards for user'});
+    }
+});
+
+router.put('/:user_id/credit_cards/:credit_id', async (req, res) => {
+    const { credit_id } = req.params;
+    const { card_number, exp_date, name, address } = req.body;
+
+    try {
+        const result = await pool.query('UPDATE CreditCards SET card_number = $1, exp_date = $2, name = $3, address = $4 WHERE credit_id = $5', [card_number, exp_date, name, address, credit_id]);
+        res.status(200).json({ message: 'Credit card updated!', address_id: result.rows[0].address_id });
+    } catch (err) {
+        console.error('Error occured for credit card: ', err);
+        res.status(500).json({ error: 'Cannot update credit card'});
+    }
+});
+
+router.delete('/:user_id/credit_cards/:credit_id', async (req, res) => {
+    const { credit_id } = req.params;
+    try {
+        await pool.query('DELETE FROM Addresses WHERE address_id = $1', [credit_id]);
+        res.status(200).json({ message: 'Credit card deleted!'});
+    } catch (err) {
+        console.error('Error occured for address: ', err);
+        res.status(500).json({ error: 'Cannot delete credit card'});
+    }
+});
+
+export default router;
