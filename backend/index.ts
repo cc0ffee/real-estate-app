@@ -4,7 +4,7 @@ import cors from 'cors';
 import bParser from 'body-parser';
 import { Pool } from 'pg';
 import userRoutes from './routes/userRoutes';
-//import propertyRoutes from './routes/propertyRoutes';
+import propertyRoutes from './routes/propertyRoutes';
 //import bookingRoutes from './routes/bookingRoutes';
 
 const app = express();
@@ -22,7 +22,7 @@ app.use(cors({ origin: 'http://localhost:5173', credentials: true}));
 app.use(express.json());
 
 app.use('/api/users', userRoutes);
-//app.use('/api/properties', propertyRoutes);
+app.use('/api/properties', propertyRoutes);
 //app.use('api/bookings', bookingRoutes);
 
 

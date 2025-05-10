@@ -3,21 +3,20 @@ import { pool } from '../index';
 
 const router = express.Router();
 
-router.get('/agents/:user_id/properties', async (req, res) => {
+// GET properties for a specific agent
+router.get('/agent/:user_id', async (req, res) => {
   const { user_id } = req.params;
   try {
-    const result = await pool.query(
-      'SELECT * FROM Property WHERE user_id = $1',
-      [user_id]
-    );
+    const result = await pool.query('SELECT * FROM Property WHERE user_id = $1', [user_id]);
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching agent properties:', err);
+    console.error('Error fetching properties:', err);
     res.status(500).json({ error: 'Failed to retrieve properties' });
   }
 });
 
-router.post('/properties', async (req, res) => {
+// POST new property
+router.post('/', async (req, res) => {
   const { user_id, address, city, state, description, availability, type, subtypeData } = req.body;
   try {
     const result = await pool.query(
@@ -27,14 +26,11 @@ router.post('/properties', async (req, res) => {
     const prop_id = result.rows[0].prop_id;
 
     if (type === 'House') {
-      const { rooms, sq_ft } = subtypeData;
-      await pool.query('INSERT INTO House (prop_id, rooms, sq_ft) VALUES ($1, $2, $3)', [prop_id, rooms, sq_ft]);
+      await pool.query('INSERT INTO House (prop_id, rooms, sq_ft) VALUES ($1, $2, $3)', [prop_id, subtypeData.rooms, subtypeData.sq_ft]);
     } else if (type === 'Apartment') {
-      const { rooms, sq_ft, building_type } = subtypeData;
-      await pool.query('INSERT INTO Apartment (prop_id, rooms, sq_ft, building_type) VALUES ($1, $2, $3, $4)', [prop_id, rooms, sq_ft, building_type]);
+      await pool.query('INSERT INTO Apartment (prop_id, rooms, sq_ft, building_type) VALUES ($1, $2, $3, $4)', [prop_id, subtypeData.rooms, subtypeData.sq_ft, subtypeData.building_type]);
     } else if (type === 'CommercialBuilding') {
-      const { sq_ft, business_type } = subtypeData;
-      await pool.query('INSERT INTO CommercialBuilding (prop_id, sq_ft, business_type) VALUES ($1, $2, $3)', [prop_id, sq_ft, business_type]);
+      await pool.query('INSERT INTO CommercialBuilding (prop_id, sq_ft, business_type) VALUES ($1, $2, $3)', [prop_id, subtypeData.sq_ft, subtypeData.business_type]);
     }
 
     res.status(201).json({ message: 'Property added', prop_id });
@@ -44,39 +40,31 @@ router.post('/properties', async (req, res) => {
   }
 });
 
-router.put('/properties/:prop_id', async (req, res) => {
+// PUT update property (only if agent owns it)
+router.put('/:prop_id', async (req, res) => {
   const { prop_id } = req.params;
-  const { address, city, state, description, availability, type, subtypeData } = req.body;
+  const { user_id, address, city, state, description, availability, type, subtypeData } = req.body;
   try {
+    const ownership = await pool.query('SELECT 1 FROM Property WHERE prop_id = $1 AND user_id = $2', [prop_id, user_id]);
+    if (ownership.rowCount === 0) return res.status(403).json({ error: 'Forbidden: You do not own this property' });
+
     await pool.query(
       'UPDATE Property SET address = $1, city = $2, state = $3, description = $4, availability = $5, type = $6 WHERE prop_id = $7',
       [address, city, state, description, availability, type, prop_id]
     );
 
     if (type === 'House') {
-      const { rooms, sq_ft } = subtypeData;
-      const exists = await pool.query('SELECT 1 FROM House WHERE prop_id = $1', [prop_id]);
-      if (exists.rowCount) {
-        await pool.query('UPDATE House SET rooms = $1, sq_ft = $2 WHERE prop_id = $3', [rooms, sq_ft, prop_id]);
-      } else {
-        await pool.query('INSERT INTO House (prop_id, rooms, sq_ft) VALUES ($1, $2, $3)', [prop_id, rooms, sq_ft]);
-      }
+      await pool.query('DELETE FROM Apartment WHERE prop_id = $1', [prop_id]);
+      await pool.query('DELETE FROM CommercialBuilding WHERE prop_id = $1', [prop_id]);
+      await pool.query('INSERT INTO House (prop_id, rooms, sq_ft) VALUES ($1, $2, $3) ON CONFLICT (prop_id) DO UPDATE SET rooms = $2, sq_ft = $3', [prop_id, subtypeData.rooms, subtypeData.sq_ft]);
     } else if (type === 'Apartment') {
-      const { rooms, sq_ft, building_type } = subtypeData;
-      const exists = await pool.query('SELECT 1 FROM Apartment WHERE prop_id = $1', [prop_id]);
-      if (exists.rowCount) {
-        await pool.query('UPDATE Apartment SET rooms = $1, sq_ft = $2, building_type = $3 WHERE prop_id = $4', [rooms, sq_ft, building_type, prop_id]);
-      } else {
-        await pool.query('INSERT INTO Apartment (prop_id, rooms, sq_ft, building_type) VALUES ($1, $2, $3, $4)', [prop_id, rooms, sq_ft, building_type]);
-      }
+      await pool.query('DELETE FROM House WHERE prop_id = $1', [prop_id]);
+      await pool.query('DELETE FROM CommercialBuilding WHERE prop_id = $1', [prop_id]);
+      await pool.query('INSERT INTO Apartment (prop_id, rooms, sq_ft, building_type) VALUES ($1, $2, $3, $4) ON CONFLICT (prop_id) DO UPDATE SET rooms = $2, sq_ft = $3, building_type = $4', [prop_id, subtypeData.rooms, subtypeData.sq_ft, subtypeData.building_type]);
     } else if (type === 'CommercialBuilding') {
-      const { sq_ft, business_type } = subtypeData;
-      const exists = await pool.query('SELECT 1 FROM CommercialBuilding WHERE prop_id = $1', [prop_id]);
-      if (exists.rowCount) {
-        await pool.query('UPDATE CommercialBuilding SET sq_ft = $1, business_type = $2 WHERE prop_id = $3', [sq_ft, business_type, prop_id]);
-      } else {
-        await pool.query('INSERT INTO CommercialBuilding (prop_id, sq_ft, business_type) VALUES ($1, $2, $3)', [prop_id, sq_ft, business_type]);
-      }
+      await pool.query('DELETE FROM House WHERE prop_id = $1', [prop_id]);
+      await pool.query('DELETE FROM Apartment WHERE prop_id = $1', [prop_id]);
+      await pool.query('INSERT INTO CommercialBuilding (prop_id, sq_ft, business_type) VALUES ($1, $2, $3) ON CONFLICT (prop_id) DO UPDATE SET sq_ft = $2, business_type = $3', [prop_id, subtypeData.sq_ft, subtypeData.business_type]);
     }
 
     res.json({ message: 'Property updated' });
@@ -86,9 +74,14 @@ router.put('/properties/:prop_id', async (req, res) => {
   }
 });
 
-router.delete('/properties/:prop_id', async (req, res) => {
+// DELETE property (only if agent owns it)
+router.delete('/:prop_id', async (req, res) => {
   const { prop_id } = req.params;
+  const { user_id } = req.query;
   try {
+    const ownership = await pool.query('SELECT 1 FROM Property WHERE prop_id = $1 AND user_id = $2', [prop_id, user_id]);
+    if (ownership.rowCount === 0) return res.status(403).json({ error: 'Forbidden: You do not own this property' });
+
     await pool.query('DELETE FROM House WHERE prop_id = $1', [prop_id]);
     await pool.query('DELETE FROM Apartment WHERE prop_id = $1', [prop_id]);
     await pool.query('DELETE FROM CommercialBuilding WHERE prop_id = $1', [prop_id]);

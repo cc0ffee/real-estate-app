@@ -40,6 +40,7 @@ CREATE TABLE CreditCards (
 
 CREATE TABLE Property (
     prop_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
     address TEXT NOT NULL,
     city VARCHAR(100),
     state VARCHAR(100),

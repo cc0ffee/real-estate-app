@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddressManager from '../components/address-manager';
 import CreditCardManager from '../components/card-manager';
+import PropertyManager from '../components/property-manager';
 
 interface User {
-    user_id: number;
-    is_agent: boolean;
-  }
-  
-interface DashboardPageProps {
-    user: User | null;
+  user_id: number;
+  is_agent: boolean;
 }
-  
+
+interface DashboardPageProps {
+  user: User | null;
+}
 
 export default function DashboardPage({ user }: DashboardPageProps) {
   const [activeTab, setActiveTab] = useState('');
@@ -19,13 +19,14 @@ export default function DashboardPage({ user }: DashboardPageProps) {
 
   useEffect(() => {
     if (!user) {
-        navigate('/login');
+      navigate('/login');
     } else {
-      setActiveTab(user.is_agent ? 'properties' : 'addresses');
+      setActiveTab(user.is_agent ? 'properties' : 'properties');
     }
   }, [user]);
 
   const renterTabs = [
+    { key: 'properties', label: 'Available Properties' },
     { key: 'addresses', label: 'Addresses' },
     { key: 'payments', label: 'Payment Methods' },
   ];
@@ -35,7 +36,7 @@ export default function DashboardPage({ user }: DashboardPageProps) {
     { key: 'bookings', label: 'View Bookings' },
   ];
 
-  const tabs = renterTabs;
+  const tabs = user?.is_agent ? agentTabs : renterTabs;
 
   return (
     <div className="flex min-h-screen">
@@ -54,13 +55,16 @@ export default function DashboardPage({ user }: DashboardPageProps) {
           ))}
         </nav>
       </div>
+
+      {/* Main Content */}
       <div className="flex-1 p-6">
         {!user ? null : (
           <>
+            {!user.is_agent && activeTab === 'properties' && <div>Property management UI coming soon.</div>}
             {!user.is_agent && activeTab === 'addresses' && <AddressManager userId={user.user_id} />}
             {!user.is_agent && activeTab === 'payments' && <CreditCardManager userId={user.user_id} />}
-            {user.is_agent && activeTab === 'properties' && <div>Property management UI coming soon.</div>}
-            {user.is_agent && activeTab === 'bookings' && <div>Booking management UI coming soon.</div>}
+            {user.is_agent && activeTab === 'properties' && <PropertyManager userId={user.user_id} />}
+            {!user.is_agent && activeTab === 'bookings' && <div>Property management UI coming soon.</div>}
           </>
         )}
       </div>
