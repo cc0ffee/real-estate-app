@@ -25,7 +25,7 @@ router.post('/login', async (req, res) => {
     const { email } = req.body;
 
     try {
-        const result = await pool.query('GET * FROM Users WHERE email = $1', [email]);
+        const result = await pool.query('SELECT * FROM Users WHERE email = $1', [email]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: "User does not exist" });
@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
 
 })
 
-router.get('/:user_id', async (req, res) => {
+router.get('user/:user_id', async (req, res) => {
     const { user_id } = req.params;
     try {
         const result = await pool.query('SELECT * FROM Users WHERE user_id = $1', [user_id]);
@@ -51,7 +51,7 @@ router.get('/:user_id', async (req, res) => {
     }
 });
 
-router.put('/:user_id', async (req, res) => {
+router.put('user/:user_id', async (req, res) => {
     const { user_id } = req.params;
     const { name } = req.body;
     try {
@@ -63,7 +63,7 @@ router.put('/:user_id', async (req, res) => {
     }
 });
 
-router.delete('/:user_id', async (req, res) => {
+router.delete('user/:user_id', async (req, res) => {
     const { user_id } = req.params;
 
     try {
@@ -75,7 +75,7 @@ router.delete('/:user_id', async (req, res) => {
     }
 });
 
-router.post('/:user_id/addresses', async (req, res) => {
+router.post('user/:user_id/addresses', async (req, res) => {
     const { user_id } = req.params;
     const { address } = req.body;
 
@@ -88,7 +88,7 @@ router.post('/:user_id/addresses', async (req, res) => {
     }
 });
 
-router.get('/:user_id/addresses', async (req, res) => {
+router.get('user/:user_id/addresses', async (req, res) => {
     const { user_id } = req.params;
     try {
         const result = await pool.query('SELECT * FROM Addresses where user_id = $1', [user_id]);
@@ -99,7 +99,7 @@ router.get('/:user_id/addresses', async (req, res) => {
     }
 });
 
-router.put('/:user_id/addresses/:address_id', async (req, res) => {
+router.put('user/:user_id/addresses/:address_id', async (req, res) => {
     const { address_id } = req.params;
     const { address } = req.body;
 
@@ -112,7 +112,7 @@ router.put('/:user_id/addresses/:address_id', async (req, res) => {
     }
 });
 
-router.delete('/:user_id/addresses/:address_id', async (req, res) => {
+router.delete('user/:user_id/addresses/:address_id', async (req, res) => {
     const { address_id } = req.params;
     try {
         const result = await pool.query('SELECT * FROM CreditCards WHERE address = (SELECT address FROM Addresses WHERE address_id = $1)', [address_id]);
@@ -127,7 +127,7 @@ router.delete('/:user_id/addresses/:address_id', async (req, res) => {
     }
 });
 
-router.post('/:user_id/credit_cards', async (req, res) => {
+router.post('user/:user_id/credit_cards', async (req, res) => {
     const { user_id } = req.params;
     const { card_number, exp_date, name, address } = req.body;
 
@@ -140,7 +140,7 @@ router.post('/:user_id/credit_cards', async (req, res) => {
     }
 });
 
-router.get('/:user_id/credit_cards', async (req, res) => {
+router.get('user/:user_id/credit_cards', async (req, res) => {
     const { user_id } = req.params;
     try {
         const result = await pool.query('SELECT * FROM CreditCards where user_id = $1', [user_id]);
@@ -151,7 +151,7 @@ router.get('/:user_id/credit_cards', async (req, res) => {
     }
 });
 
-router.put('/:user_id/credit_cards/:credit_id', async (req, res) => {
+router.put('user/:user_id/credit_cards/:credit_id', async (req, res) => {
     const { credit_id } = req.params;
     const { card_number, exp_date, name, address } = req.body;
 
@@ -164,7 +164,7 @@ router.put('/:user_id/credit_cards/:credit_id', async (req, res) => {
     }
 });
 
-router.delete('/:user_id/credit_cards/:credit_id', async (req, res) => {
+router.delete('user/:user_id/credit_cards/:credit_id', async (req, res) => {
     const { credit_id } = req.params;
     try {
         await pool.query('DELETE FROM Addresses WHERE address_id = $1', [credit_id]);

@@ -1,18 +1,18 @@
 CREATE TABLE Users (
-    user_id INTEGER PRIMARY KEY,
+    user_id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE Addresses (
-    address_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL,
+    address_id SERIAL PRIMARY KEY,
+    user_id SERIAL NOT NULL,
     address TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 CREATE TABLE Agents (
-    user_id INTEGER PRIMARY KEY,
+    user_id SERIAL PRIMARY KEY,
     job_title VARCHAR(100),
     agency VARCHAR(100),
     contact_info VARCHAR(100),
@@ -20,7 +20,7 @@ CREATE TABLE Agents (
 );
 
 CREATE TABLE ProspectiveRenters (
-    user_id INTEGER PRIMARY KEY,
+    user_id SERIAL PRIMARY KEY,
     move_in_date DATE,
     preferred_location VARCHAR(100),
     budget DECIMAL(10,2),
@@ -28,8 +28,8 @@ CREATE TABLE ProspectiveRenters (
 );
 
 CREATE TABLE CreditCards (
-    credit_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL,
+    credit_id SERIAL PRIMARY KEY,
+    user_id SERIAL NOT NULL,
     card_number VARCHAR(20) UNIQUE,
     exp_date DATE,
     name VARCHAR(100),
@@ -38,7 +38,7 @@ CREATE TABLE CreditCards (
 );
 
 CREATE TABLE Property (
-    prop_id INTEGER PRIMARY KEY,
+    prop_id SERIAL PRIMARY KEY,
     address TEXT NOT NULL,
     city VARCHAR(100),
     state VARCHAR(100),
@@ -48,14 +48,14 @@ CREATE TABLE Property (
 );
 
 CREATE TABLE House (
-    prop_id INTEGER PRIMARY KEY,
+    prop_id SERIAL PRIMARY KEY,
     rooms INTEGER,
     sq_ft INTEGER,
     FOREIGN KEY (prop_id) REFERENCES Property(prop_id)
 );
 
 CREATE TABLE Apartment (
-    prop_id INTEGER PRIMARY KEY,
+    prop_id SERIAL PRIMARY KEY,
     rooms INTEGER,
     sq_ft INTEGER,
     building_type VARCHAR(100),
@@ -63,24 +63,24 @@ CREATE TABLE Apartment (
 );
 
 CREATE TABLE CommercialBuilding (
-    prop_id INTEGER PRIMARY KEY,
+    prop_id SERIAL PRIMARY KEY,
     sq_ft INTEGER,
     business_type VARCHAR(100),
     FOREIGN KEY (prop_id) REFERENCES Property(prop_id)
 );
 
 CREATE TABLE Price (
-    price_id INTEGER PRIMARY KEY,
-    prop_id INTEGER NOT NULL,
+    price_id SERIAL PRIMARY KEY,
+    prop_id SERIAL NOT NULL,
     amount DECIMAL(10,2),
     FOREIGN KEY (prop_id) REFERENCES Property(prop_id)
 );
 
 CREATE TABLE Booking (
-    book_id INTEGER PRIMARY KEY,
-    prop_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    credit_id INTEGER NOT NULL,
+    book_id SERIAL PRIMARY KEY,
+    prop_id SERIAL NOT NULL,
+    user_id SERIAL NOT NULL,
+    credit_id SERIAL NOT NULL,
     start DATE,
     "end" DATE,
     status VARCHAR(50),

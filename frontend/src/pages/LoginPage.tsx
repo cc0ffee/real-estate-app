@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function LoginPage({ setUser }: { setUser: Function }) {
-  const [formData, setFormData] = useState({email: '', password: ''});
+  const [formData, setFormData] = useState({email: ''});
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -11,7 +11,7 @@ export default function LoginPage({ setUser }: { setUser: Function }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await fetch('http://localhost:3001/login', {
+    const result = await fetch('http://localhost:3001/api/users/login', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(formData),
