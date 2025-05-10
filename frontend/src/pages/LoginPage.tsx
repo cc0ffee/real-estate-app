@@ -20,6 +20,7 @@ export default function LoginPage({ setUser }: { setUser: Function }) {
     const data = await result.json();
     if (data.success) {
       setUser(data.user);
+      navigate('/dashboard');
     } else {
       alert(data.message || 'Login failed');
     }
