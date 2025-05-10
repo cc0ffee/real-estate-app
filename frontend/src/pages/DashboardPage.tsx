@@ -23,7 +23,7 @@ export default function DashboardPage({ user }: DashboardPageProps) {
     if (!user) {
       navigate('/login');
     } else {
-      setActiveTab(user.is_agent ? 'properties' : 'properties');
+      setActiveTab(user.is_agent ? 'manage_properties' : 'properties');
     }
   }, [user]);
 
@@ -35,7 +35,6 @@ export default function DashboardPage({ user }: DashboardPageProps) {
   ];
 
   const agentTabs = [
-    { key: 'properties', label: 'Available Properties' },
     { key: 'manage_properties', label: 'Manage Properties' },
     { key: 'bookings', label: 'View Bookings' },
   ];
@@ -64,8 +63,7 @@ export default function DashboardPage({ user }: DashboardPageProps) {
       <div className="flex-1 p-6">
         {!user ? null : (
           <>
-            {}
-            {activeTab === 'properties' && <PropertySearchGrid userId={user.user_id} />}
+            {!user.is_agent && activeTab === 'properties' && <PropertySearchGrid userId={user.user_id} />}
             {!user.is_agent && activeTab === 'addresses' && <AddressManager userId={user.user_id} />}
             {!user.is_agent && activeTab === 'payments' && <CreditCardManager userId={user.user_id} />}
             {user.is_agent && activeTab === 'manage_properties' && <PropertyManager userId={user.user_id} />}

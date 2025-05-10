@@ -46,7 +46,8 @@ CREATE TABLE Property (
     state VARCHAR(100),
     description TEXT,
     availability BOOLEAN DEFAULT TRUE,
-    type VARCHAR(50)
+    type VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 CREATE TABLE House (

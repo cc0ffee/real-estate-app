@@ -152,7 +152,17 @@ export default function PropertySearchGrid({ userId }: PropertySearchGridProps) 
                     ))}
                   </select>
                   {totalCost && <p><strong>Total Cost:</strong> ${totalCost}</p>}
-                  <button onClick={() => handleBook(p.prop_id)} className="bg-green-600 text-white px-4 py-2 rounded">Book</button>
+                  <button
+                        onClick={() => handleBook(p.prop_id)}
+                        disabled={!p.availability}
+                        className={`px-4 py-2 rounded w-full ${
+                            p.availability
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-gray-400 text-white cursor-not-allowed'
+                        }`}
+                        >
+                        {p.availability ? 'Book' : 'Unavailable'}
+                    </button>
                 </div>
               )}
             </div>

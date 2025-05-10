@@ -27,7 +27,6 @@ export default function Register({ setUser }: { setUser: Function }) {
 
     const data = await result.json();
     if (data.message) {
-      const isAgent = data.is_agent ?? false;
       setUser({user_id: data.user_id, is_agent: isAgent});
       navigate('/dashboard');
     } else {
@@ -37,25 +36,27 @@ export default function Register({ setUser }: { setUser: Function }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <h2 className="text-xl font-semibold mb-4">I am a...</h2>
 
       {isAgent === null && (
-        <div className="flex gap-6 mb-6">
-          <div
-            onClick={() => setIsAgent(false)}
-            className="cursor-pointer p-6 bg-white shadow rounded-lg w-64 text-center border hover:border-gray-400"
-          >
-            <div className="text-4xl mb-2">👤</div>
-            <div className="font-bold mb-1">Prospective Renter</div>
-            <div className="text-sm text-gray-600">I want to find and book properties</div>
-          </div>
-          <div
-            onClick={() => setIsAgent(true)}
-            className="cursor-pointer p-6 bg-white shadow rounded-lg w-64 text-center border hover:border-gray-400"
-          >
-            <div className="text-4xl mb-2">🏢</div>
-            <div className="font-bold mb-1">Property Agent</div>
-            <div className="text-sm text-gray-600">I want to list and manage properties</div>
+        <div>
+          <h2 className="text-xl font-semibold mb-4">I am a...</h2>
+          <div className="flex gap-6 mb-6">
+            <div
+              onClick={() => setIsAgent(false)}
+              className="cursor-pointer p-6 bg-white shadow rounded-lg w-64 text-center border hover:border-gray-400"
+            >
+              <div className="text-4xl mb-2">👤</div>
+              <div className="font-bold mb-1">Prospective Renter</div>
+              <div className="text-sm text-gray-600">I want to find and book properties</div>
+            </div>
+            <div
+              onClick={() => setIsAgent(true)}
+              className="cursor-pointer p-6 bg-white shadow rounded-lg w-64 text-center border hover:border-gray-400"
+            >
+              <div className="text-4xl mb-2">🏢</div>
+              <div className="font-bold mb-1">Property Agent</div>
+              <div className="text-sm text-gray-600">I want to list and manage properties</div>
+            </div>
           </div>
         </div>
       )}
