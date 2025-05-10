@@ -33,13 +33,18 @@ router.get('/search', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { user_id, address, city, state, description, availability, type, subtypeData } = req.body;
+  const { user_id, address, city, state, description, availability, type, subtypeData, price } = req.body;
   try {
     const result = await pool.query(
       'INSERT INTO Property (user_id, address, city, state, description, availability, type) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING prop_id',
       [user_id, address, city, state, description, availability, type]
     );
     const prop_id = result.rows[0].prop_id;
+
+    await pool.query(
+      'INSERT INTO Price (prop_id, amount) VALUES ($1, $2)',
+      [prop_id, price]
+    );
 
     if (type === 'House') {
       await pool.query('INSERT INTO House (prop_id, rooms, sq_ft) VALUES ($1, $2, $3)', [prop_id, subtypeData.rooms, subtypeData.sq_ft]);
@@ -56,10 +61,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update property (only if agent owns it)
 router.put('/:prop_id', async (req, res) => {
   const { prop_id } = req.params;
-  const { user_id, address, city, state, description, availability, type, subtypeData } = req.body;
+  const { user_id, address, city, state, description, availability, type, subtypeData, price } = req.body;
   try {
     const ownership = await pool.query('SELECT 1 FROM Property WHERE prop_id = $1 AND user_id = $2', [prop_id, user_id]);
     if (ownership.rowCount === 0) return res.status(403).json({ error: 'Forbidden: You do not own this property' });
@@ -67,6 +71,11 @@ router.put('/:prop_id', async (req, res) => {
     await pool.query(
       'UPDATE Property SET address = $1, city = $2, state = $3, description = $4, availability = $5, type = $6 WHERE prop_id = $7',
       [address, city, state, description, availability, type, prop_id]
+    );
+
+    await pool.query(
+      'INSERT INTO Price (prop_id, amount) VALUES ($1, $2) ON CONFLICT (prop_id) DO UPDATE SET amount = $2',
+      [prop_id, price]
     );
 
     if (type === 'House') {
