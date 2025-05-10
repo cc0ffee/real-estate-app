@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 //import DashboardPage from './pages/DashboardPage';
 import { useState } from 'react';
+import DashboardPage from './pages/DashboardPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage setUser={setUser} />} />
         <Route path="/register" element={<RegisterPage setUser={setUser} />} />
+        <Route path="/dashboard" element={<DashboardPage user={user} />} />
       </Routes>
     </Router>
   )
