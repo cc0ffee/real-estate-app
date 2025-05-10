@@ -44,15 +44,22 @@ export default function AddressManager({ userId }: { userId: number }) {
   };
 
   const handleAdd = async () => {
+    const trimmed = address.trim();
+    if (!trimmed) return;
+  
     await fetch(`http://localhost:3001/api/users/user/${userId}/addresses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address })
+      body: JSON.stringify({ address: trimmed })
     });
+  
     setAddress('');
     const res = await fetch(`http://localhost:3001/api/users/user/${userId}/addresses`);
     const data = await res.json();
-    setAddresses(Array.isArray(data) ? data : [data]);
+    const validAddresses = (Array.isArray(data) ? data : [data]).filter(
+      (a: Address) => a.address && a.address.trim() !== ''
+    );
+    setAddresses(validAddresses);
   };
 
   return (

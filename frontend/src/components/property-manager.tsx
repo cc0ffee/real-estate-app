@@ -46,6 +46,7 @@ export default function PropertyManager({ userId }: PropertyManagerProps) {
   const handleSubmit = async () => {
     const url = editId ? `http://localhost:3001/api/properties/${editId}` : 'http://localhost:3001/api/properties';
     const method = editId ? 'PUT' : 'POST';
+    console.log("Submitting form:", { ...form, user_id: userId });
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
