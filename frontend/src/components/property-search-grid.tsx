@@ -26,12 +26,15 @@ export default function PropertySearchGrid({ userId }: PropertySearchGridProps) 
   const [results, setResults] = useState<Property[]>([]);
   const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
   const [bookingInputs, setBookingInputs] = useState<Record<number, any>>({});
-
-  const fetchAllProperties = async () => {
-    const res = await fetch('http://localhost:3001/api/properties/search');
-    const data = await res.json();
-    setResults(data);
-  };
+  const [filters, setFilters] = useState({
+    city: '',
+    state: '',
+    type: '',
+    min_price: '',
+    max_price: '',
+    min_bedrooms: '',
+    order_by: ''
+  });
 
   const fetchCreditCards = async () => {
     const res = await fetch(`http://localhost:3001/api/users/user/${userId}/credit_cards`);
@@ -39,8 +42,20 @@ export default function PropertySearchGrid({ userId }: PropertySearchGridProps) 
     setCreditCards(Array.isArray(data) ? data : [data]);
   };
 
+  const fetchFilteredProperties = async () => {
+    const query = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(filters)) {
+      if (value) query.append(key, value);
+    }
+
+    const res = await fetch(`http://localhost:3001/api/properties/search?${query.toString()}`);
+    const data = await res.json();
+    setResults(data);
+  };
+
   useEffect(() => {
-    fetchAllProperties();
+    fetchFilteredProperties();
     fetchCreditCards();
   }, []);
 
@@ -63,7 +78,9 @@ export default function PropertySearchGrid({ userId }: PropertySearchGridProps) 
 
   const handleBook = async (propId: number) => {
     const input = bookingInputs[propId];
-    if (!input || !input.start || !input.end || !input.credit_id) return alert('Please complete all fields');
+    if (!input?.start || !input?.end || !input?.credit_id) {
+      return alert('Please complete all booking fields.');
+    }
 
     const res = await fetch('http://localhost:3001/api/bookings', {
       method: 'POST',
@@ -77,17 +94,40 @@ export default function PropertySearchGrid({ userId }: PropertySearchGridProps) 
       })
     });
 
+    const data = await res.json();
     if (res.ok) {
       alert('Booking successful');
     } else {
-      const data = await res.json();
       alert(data.error || 'Booking failed');
     }
   };
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold mb-6">Available Properties</h2>
+      <h2 className="text-xl font-semibold mb-6">Search Properties</h2>
+
+      {/* 🔍 Search Form */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <input type="text" placeholder="City" className="border p-2 rounded w-full" value={filters.city} onChange={e => setFilters({ ...filters, city: e.target.value })} />
+        <input type="text" placeholder="State" className="border p-2 rounded w-full" value={filters.state} onChange={e => setFilters({ ...filters, state: e.target.value })} />
+        <select className="border p-2 rounded w-full" value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
+          <option value="">All Types</option>
+          <option value="House">House</option>
+          <option value="Apartment">Apartment</option>
+          <option value="CommercialBuilding">Commercial Building</option>
+        </select>
+        <select className="border p-2 rounded w-full" value={filters.order_by} onChange={e => setFilters({ ...filters, order_by: e.target.value })}>
+          <option value="">Sort By</option>
+          <option value="price">Price</option>
+          <option value="bedrooms">Bedrooms</option>
+        </select>
+        <input type="number" placeholder="Min Price" className="border p-2 rounded w-full" value={filters.min_price} onChange={e => setFilters({ ...filters, min_price: e.target.value })} />
+        <input type="number" placeholder="Max Price" className="border p-2 rounded w-full" value={filters.max_price} onChange={e => setFilters({ ...filters, max_price: e.target.value })} />
+        <input type="number" placeholder="Min Bedrooms" className="border p-2 rounded w-full" value={filters.min_bedrooms} onChange={e => setFilters({ ...filters, min_bedrooms: e.target.value })} />
+        <button onClick={fetchFilteredProperties} className="bg-blue-600 text-white px-4 py-2 rounded w-full">Search</button>
+      </div>
+
+      {/* 📦 Property Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {results.map(p => {
           const input = bookingInputs[p.prop_id] || {};
@@ -100,6 +140,7 @@ export default function PropertySearchGrid({ userId }: PropertySearchGridProps) 
               <p><strong>Price:</strong> ${p.amount}</p>
               <p><strong>Bedrooms:</strong> {p.rooms || 'N/A'}</p>
               <p><strong>Available:</strong> {p.availability ? 'Yes' : 'No'}</p>
+
               {p.availability && (
                 <div className="mt-4 space-y-2">
                   <input type="date" value={input.start || ''} onChange={e => handleBookingChange(p.prop_id, 'start', e.target.value)} className="w-full border p-2 rounded" />

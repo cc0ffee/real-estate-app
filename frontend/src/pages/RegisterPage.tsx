@@ -36,7 +36,7 @@ export default function Register({ setUser }: { setUser: Function }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <h2 className="text-xl font-semibold mb-4">I am a...</h2>
 
       {isAgent === null && (

@@ -31,11 +31,12 @@ CREATE TABLE ProspectiveRenters (
 CREATE TABLE CreditCards (
     credit_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
+    address_id INTEGER NOT NULL,
     card_number VARCHAR(20) UNIQUE,
     exp_date DATE,
     name VARCHAR(100),
-    address TEXT,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (address_id) REFERENCES Addresses(address_id)
 );
 
 CREATE TABLE Property (

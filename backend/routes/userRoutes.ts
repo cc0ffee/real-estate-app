@@ -22,28 +22,28 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const result = await pool.query(`
-        SELECT u.*, 
-               CASE WHEN a.user_id IS NOT NULL THEN true ELSE false END AS is_agent
-        FROM Users u
-        LEFT JOIN Agents a ON u.user_id = a.user_id
-        WHERE u.email = $1 AND u.password = $2
-      `, [email, password]);
-  
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: "Login Failed" });
-      }
-  
-      const user = result.rows[0];
-      res.status(200).json({ message: 'Login successful', user_id: user.user_id, is_agent: user.is_agent });
-    } catch (err) {
-      console.error("Login error: ", err);
-      res.status(500).json({ error: 'Failed to login user' });
+  const { email, password } = req.body;
+
+  try {
+    const result = await pool.query(`
+      SELECT u.*, 
+             CASE WHEN a.user_id IS NOT NULL THEN true ELSE false END AS is_agent
+      FROM Users u
+      LEFT JOIN Agents a ON u.user_id = a.user_id
+      WHERE u.email = $1 AND u.password = $2
+    `, [email, password]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Login Failed" });
     }
-  });
+
+    const user = result.rows[0];
+    res.status(200).json({ message: 'Login successful', user_id: user.user_id, is_agent: user.is_agent });
+  } catch (err) {
+    console.error("Login error: ", err);
+    res.status(500).json({ error: 'Failed to login user' });
+  }
+});
 
 router.get('/user/:user_id', async (req, res) => {
     const { user_id } = req.params;

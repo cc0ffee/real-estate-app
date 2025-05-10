@@ -16,19 +16,73 @@ router.get('/agent/:user_id', async (req, res) => {
 });
 
 router.get('/search', async (req, res) => {
+  const {
+    city,
+    state,
+    type,
+    min_price,
+    max_price,
+    min_bedrooms,
+    order_by
+  } = req.query;
+
+  let query = `
+    SELECT 
+      p.*, 
+      pr.amount, 
+      COALESCE(h.rooms, a.rooms) AS rooms
+    FROM Property p
+    LEFT JOIN House h ON p.prop_id = h.prop_id
+    LEFT JOIN Apartment a ON p.prop_id = a.prop_id
+    LEFT JOIN Price pr ON p.prop_id = pr.prop_id
+    WHERE p.availability = true
+  `;
+
+  const values: any[] = [];
+  let i = 1;
+
+  if (city) {
+    query += ` AND p.city ILIKE $${i++}`;
+    values.push(`%${city}%`);
+  }
+
+  if (state) {
+    query += ` AND p.state ILIKE $${i++}`;
+    values.push(`%${state}%`);
+  }
+
+  if (type) {
+    query += ` AND p.type = $${i++}`;
+    values.push(type);
+  }
+
+  if (min_price) {
+    query += ` AND pr.amount >= $${i++}`;
+    values.push(Number(min_price));
+  }
+
+  if (max_price) {
+    query += ` AND pr.amount <= $${i++}`;
+    values.push(Number(max_price));
+  }
+
+  if (min_bedrooms) {
+    query += ` AND COALESCE(h.rooms, a.rooms) >= $${i++}`;
+    values.push(Number(min_bedrooms));
+  }
+
+  if (order_by === 'price') {
+    query += ` ORDER BY pr.amount ASC`;
+  } else if (order_by === 'bedrooms') {
+    query += ` ORDER BY rooms ASC`;
+  }
+
   try {
-    const query = `
-      SELECT p.*, pr.amount, COALESCE(h.rooms, a.rooms) AS rooms
-      FROM Property p
-      LEFT JOIN House h ON p.prop_id = h.prop_id
-      LEFT JOIN Apartment a ON p.prop_id = a.prop_id
-      LEFT JOIN Price pr ON p.prop_id = pr.prop_id
-    `;
-    const result = await pool.query(query);
+    const result = await pool.query(query, values);
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching properties:', err);
-    res.status(500).json({ error: 'Failed to fetch properties' });
+    console.error('Error fetching filtered properties:', err);
+    res.status(500).json({ error: 'Failed to fetch filtered properties' });
   }
 });
 
