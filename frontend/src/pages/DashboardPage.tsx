@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AddressManager from '../components/address-manager';
 import CreditCardManager from '../components/card-manager';
 import PropertyManager from '../components/property-manager';
+import PropertySearchGrid from '../components/property-search-grid';
 
 interface User {
   user_id: number;
@@ -32,7 +33,8 @@ export default function DashboardPage({ user }: DashboardPageProps) {
   ];
 
   const agentTabs = [
-    { key: 'properties', label: 'Manage Properties' },
+    { key: 'properties', label: 'Available Properties' },
+    { key: 'manage_properties', label: 'Manage Properties' },
     { key: 'bookings', label: 'View Bookings' },
   ];
 
@@ -60,10 +62,11 @@ export default function DashboardPage({ user }: DashboardPageProps) {
       <div className="flex-1 p-6">
         {!user ? null : (
           <>
-            {!user.is_agent && activeTab === 'properties' && <div>Property management UI coming soon.</div>}
+            {}
+            {activeTab === 'properties' && <PropertySearchGrid userId={user.user_id} />}
             {!user.is_agent && activeTab === 'addresses' && <AddressManager userId={user.user_id} />}
             {!user.is_agent && activeTab === 'payments' && <CreditCardManager userId={user.user_id} />}
-            {user.is_agent && activeTab === 'properties' && <PropertyManager userId={user.user_id} />}
+            {user.is_agent && activeTab === 'manage_properties' && <PropertyManager userId={user.user_id} />}
             {!user.is_agent && activeTab === 'bookings' && <div>Property management UI coming soon.</div>}
           </>
         )}
