@@ -27,7 +27,8 @@ export default function Register({ setUser }: { setUser: Function }) {
 
     const data = await result.json();
     if (data.message) {
-      setUser(data.user);
+      const isAgent = data.is_agent ?? false;
+      setUser({user_id: data.user_id, is_agent: isAgent});
       navigate('/dashboard');
     } else {
       alert(data.error || "Registration failed");

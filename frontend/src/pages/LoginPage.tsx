@@ -18,8 +18,9 @@ export default function LoginPage({ setUser }: { setUser: Function }) {
       credentials: 'include',
     });
     const data = await result.json();
-    if (data.success) {
-      setUser(data.user);
+    if (data.message) {
+      const isAgent = data.is_agent ?? false;
+      setUser({user_id: data.user_id, is_agent: isAgent});
       navigate('/dashboard');
     } else {
       alert(data.message || 'Login failed');

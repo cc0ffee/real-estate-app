@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddressManager from '../components/address-manager';
+import CreditCardManager from '../components/card-manager';
 
 interface User {
     user_id: number;
@@ -57,7 +58,7 @@ export default function DashboardPage({ user }: DashboardPageProps) {
         {!user ? null : (
           <>
             {!user.is_agent && activeTab === 'addresses' && <AddressManager userId={user.user_id} />}
-            {!user.is_agent && activeTab === 'payments' && <div>Property management UI coming soon.</div>}
+            {!user.is_agent && activeTab === 'payments' && <CreditCardManager userId={user.user_id} />}
             {user.is_agent && activeTab === 'properties' && <div>Property management UI coming soon.</div>}
             {user.is_agent && activeTab === 'bookings' && <div>Booking management UI coming soon.</div>}
           </>

@@ -40,8 +40,11 @@ export default function AddressManager({ userId }: AddressManagerProps) {
       method: 'DELETE'
     });
     const result = await res.json();
-    if (res.status === 400) alert(result.error);
-    else fetchAddresses();
+    if (res.status === 400) {
+      alert(result.error)
+    } else {
+      setAddresses(prev => prev.filter(addr => addr.address_id !== addressId));
+    }
   };
 
   return (
