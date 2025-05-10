@@ -5,7 +5,7 @@ import bParser from 'body-parser';
 import { Pool } from 'pg';
 import userRoutes from './routes/userRoutes';
 import propertyRoutes from './routes/propertyRoutes';
-//import bookingRoutes from './routes/bookingRoutes';
+import bookingRoutes from './routes/bookingRoutes';
 
 const app = express();
 const port = 3001;
@@ -23,7 +23,7 @@ app.use(express.json());
 
 app.use('/api/users', userRoutes);
 app.use('/api/properties', propertyRoutes);
-//app.use('api/bookings', bookingRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 
 app.listen(port, () => console.log(`Server online! Listening on port ${port}`));

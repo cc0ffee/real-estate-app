@@ -4,6 +4,7 @@ import AddressManager from '../components/address-manager';
 import CreditCardManager from '../components/card-manager';
 import PropertyManager from '../components/property-manager';
 import PropertySearchGrid from '../components/property-search-grid';
+import BookingManager from '../components/booking-manager';
 
 interface User {
   user_id: number;
@@ -30,6 +31,7 @@ export default function DashboardPage({ user }: DashboardPageProps) {
     { key: 'properties', label: 'Available Properties' },
     { key: 'addresses', label: 'Addresses' },
     { key: 'payments', label: 'Payment Methods' },
+    { key: 'bookings', label: 'View Bookings' },
   ];
 
   const agentTabs = [
@@ -67,7 +69,7 @@ export default function DashboardPage({ user }: DashboardPageProps) {
             {!user.is_agent && activeTab === 'addresses' && <AddressManager userId={user.user_id} />}
             {!user.is_agent && activeTab === 'payments' && <CreditCardManager userId={user.user_id} />}
             {user.is_agent && activeTab === 'manage_properties' && <PropertyManager userId={user.user_id} />}
-            {!user.is_agent && activeTab === 'bookings' && <div>Property management UI coming soon.</div>}
+            {activeTab === 'bookings' && <BookingManager userId={user.user_id} isAgent={user.is_agent} />}
           </>
         )}
       </div>

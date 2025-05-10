@@ -17,64 +17,42 @@ router.get('/agent/:user_id', async (req, res) => {
 
 router.get('/search', async (req, res) => {
   try {
-    const { city, state, type, bedrooms, minPrice, maxPrice, order, date } = req.query;
-
-    let conditions = [];
-    let values = [];
-    let idx = 1;
-
-    if (city) {
-      conditions.push(`p.city ILIKE $${idx++}`);
-      values.push(`%${city}%`);
-    }
-    if (state) {
-      conditions.push(`p.state ILIKE $${idx++}`);
-      values.push(`%${state}%`);
-    }
-    if (type) {
-      conditions.push(`p.type = $${idx++}`);
-      values.push(type);
-    }
-    if (bedrooms) {
-      conditions.push(`COALESCE(h.rooms, a.rooms) >= $${idx++}`);
-      values.push(Number(bedrooms));
-    }
-    if (minPrice) {
-      conditions.push(`pr.amount >= $${idx++}`);
-      values.push(Number(minPrice));
-    }
-    if (maxPrice) {
-      conditions.push(`pr.amount <= $${idx++}`);
-      values.push(Number(maxPrice));
-    }
-    if (date) {
-      conditions.push(`p.availability = true`);
-    }
-
-    let query = `
+    const query = `
       SELECT p.*, pr.amount, COALESCE(h.rooms, a.rooms) AS rooms
       FROM Property p
       LEFT JOIN House h ON p.prop_id = h.prop_id
       LEFT JOIN Apartment a ON p.prop_id = a.prop_id
       LEFT JOIN Price pr ON p.prop_id = pr.prop_id
     `;
-
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
-    }
-
-    if (order === 'price') {
-      query += ' ORDER BY pr.amount ASC';
-    } else if (order === 'bedrooms') {
-      query += ' ORDER BY rooms DESC';
-    }
-
     const result = await pool.query(query);
-    console.log('Fetched properties:', result.rows);
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching properties:', err);
     res.status(500).json({ error: 'Failed to fetch properties' });
+  }
+});
+
+router.post('/', async (req, res) => {
+  const { user_id, address, city, state, description, availability, type, subtypeData } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO Property (user_id, address, city, state, description, availability, type) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING prop_id',
+      [user_id, address, city, state, description, availability, type]
+    );
+    const prop_id = result.rows[0].prop_id;
+
+    if (type === 'House') {
+      await pool.query('INSERT INTO House (prop_id, rooms, sq_ft) VALUES ($1, $2, $3)', [prop_id, subtypeData.rooms, subtypeData.sq_ft]);
+    } else if (type === 'Apartment') {
+      await pool.query('INSERT INTO Apartment (prop_id, rooms, sq_ft, building_type) VALUES ($1, $2, $3, $4)', [prop_id, subtypeData.rooms, subtypeData.sq_ft, subtypeData.building_type]);
+    } else if (type === 'CommercialBuilding') {
+      await pool.query('INSERT INTO CommercialBuilding (prop_id, sq_ft, business_type) VALUES ($1, $2, $3)', [prop_id, subtypeData.sq_ft, subtypeData.business_type]);
+    }
+
+    res.status(201).json({ message: 'Property added', prop_id });
+  } catch (err) {
+    console.error('Error adding property:', err);
+    res.status(500).json({ error: 'Failed to add property' });
   }
 });
 
